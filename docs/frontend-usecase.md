@@ -15,8 +15,8 @@ Mỗi use case bao gồm bài toán, skills cần dùng, và workflow step-by-st
 |------|-------|----------|
 | 1. Scan design system | `/ck:scout` | Map toàn bộ design tokens, components, patterns đang dùng trong project |
 | 2. Phân tích UI gốc | `/ck:ai-multimodal --vision` | Đọc screenshot component gốc → extract layout, spacing, colors, typography |
-| 3. Match design system | `/ck:ui-styling` | Áp dụng shadcn/ui + Tailwind tokens đúng theo design system hiện tại |
-| 4. Generate UI mới | `/ck:stitch` hoặc `/ck:frontend-design` | Tạo UI mới từ prompt/screenshot → export Tailwind/HTML |
+| 3. Context + Redesign | `/ck:ui-styling` | Cung cấp path code → AI tự đọc, phân tích, redesign bằng components/tokens có sẵn |
+| 4. Generate UI mới (optional) | `/ck:stitch` hoặc `/ck:frontend-design` | Chỉ khi cần tạo UI từ đầu, không redesign component có sẵn |
 | 5. Optimize | `/ck:react-best-practices` | Đảm bảo performance patterns (memo, lazy load, Suspense) |
 | 6. Clean up | `/simplify` | Tối ưu code quality, loại bỏ redundancy |
 | 7. Review | `/ck:code-review --pending` | Adversarial review kết quả cuối cùng |
@@ -56,50 +56,42 @@ Phân tích screenshot component này và extract:
 - Các icon/image placeholders
 ```
 
-**Step 3 — Cung cấp context cho AI trước khi redesign:**
-
-Đây là bước quan trọng nhất — cung cấp đầy đủ context để AI hiểu cả component gốc lẫn design system target.
-
-Prompt mẫu (copy và điền thông tin):
+**Step 3 — Cung cấp context và redesign:**
 ```
-Tôi có component [TÊN COMPONENT] từ [NGUỒN] (đã paste code bên dưới).
-Component này có logic: [MÔ TẢ NGẮN LOGIC - VD: form validation, data fetching, drag-drop...].
+/ck:ui-styling
+```
 
-Design system hiện tại của project dùng:
-- UI Library: [shadcn/ui | MUI | Ant Design | custom]
-- CSS: [Tailwind | CSS Modules | styled-components]
-- Color tokens: [liệt kê hoặc reference file, VD: globals.css, theme.ts]
-- Component patterns: [VD: Card dùng rounded-lg shadow-sm, Button dùng variant props...]
+Chỉ cần cung cấp đường dẫn tới code — AI sẽ tự đọc, phân tích logic, và redesign luôn trong một bước.
+
+Prompt mẫu (copy và điền path):
+```
+Tôi có component [TÊN COMPONENT] từ [NGUỒN].
+Code nằm ở: [RELATIVE_PATH] (VD: src/components/checkout/ hoặc src/components/user-form.tsx)
+
+Hãy đọc toàn bộ code trong path trên, tự phân tích logic và structure, rồi redesign UI.
 
 Yêu cầu:
 1. Giữ nguyên 100% business logic (hooks, state, handlers, API calls)
 2. Chỉ redesign phần UI/JSX cho match design system hiện tại
-3. Thay thế inline styles/custom CSS bằng [Tailwind classes | design tokens]
-4. Đảm bảo dark mode compatible
-5. Đảm bảo responsive (mobile-first)
-6. Giữ accessibility (aria labels, keyboard navigation)
-
-[PASTE CODE COMPONENT Ở ĐÂY]
+3. Thay các component đang dùng bằng component có sẵn trong project (scan project để biết)
+4. Dùng lại color tokens, spacing, typography đã setup trong project
+5. Đảm bảo dark mode compatible
+6. Thêm responsive nếu có thể (không bắt buộc)
+7. Giữ accessibility (aria labels, keyboard navigation)
 ```
 
-**Step 4 — Thực hiện redesign:**
+Nếu có Figma Devmode, thêm link MCP để AI tham khảo design chính xác:
 ```
-/ck:ui-styling
-```
-→ Map visual elements sang design tokens hiện tại. Thay custom CSS bằng Tailwind utilities + shadcn/ui components.
+Tôi có component [TÊN COMPONENT] từ [NGUỒN].
+Code nằm ở: [RELATIVE_PATH]
+Figma design reference: [FIGMA_MCP_LINK]
 
-Prompt mẫu nếu dùng shadcn/ui:
-```
-Redesign component này dùng shadcn/ui components:
-- Thay <button> bằng <Button variant="..." size="...">
-- Thay custom input bằng <Input>, <Select>, <Textarea>
-- Thay custom modal bằng <Dialog>
-- Thay custom dropdown bằng <DropdownMenu>
-- Dùng cn() utility cho conditional classes
-- Follow shadcn/ui patterns: composition over configuration
+Hãy đọc code, tham khảo Figma design, rồi redesign UI cho match design system của project.
+Thay các component đang dùng bằng component có sẵn trong project.
+Dùng lại color tokens đã setup. Giữ nguyên logic.
 ```
 
-**Step 5 — Generate UI mới (nếu cần tạo từ đầu):**
+**Step 4 — Generate UI mới (optional, chỉ khi cần tạo từ đầu):**
 
 *Option A — AI generate từ mô tả:*
 ```
@@ -128,7 +120,7 @@ Replicate UI từ screenshot đính kèm, nhưng dùng design system hiện tạ
 - Adapt colors sang color tokens của project
 ```
 
-**Step 6 — Optimize:**
+**Step 5 — Optimize:**
 ```
 /ck:react-best-practices
 ```
@@ -142,7 +134,7 @@ Review component vừa redesign và optimize:
 - Bundle size impact?
 ```
 
-**Step 7 — Clean up & Review:**
+**Step 6 — Clean up & Review:**
 ```
 /simplify
 /ck:code-review --pending
