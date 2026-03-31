@@ -1,12 +1,13 @@
-# ClaudeKit Engineer - Use Cases
+# Frontend Use Cases
 
-Các usecase thực tế và workflow đề xuất khi sử dụng ClaudeKit skills.
+Tổng hợp các use case thực tế cho frontend development khi sử dụng ClaudeKit skills.
+Mỗi use case bao gồm bài toán, skills cần dùng, và workflow step-by-step.
 
 ---
 
 ## Use Case 1: Redesign UI Component theo Design System hiện tại
 
-**Bài toán:** Có sẵn component (full logic + UI) từ nguồn khác, muốn redesign UI cho match design system hiện tại mà giữ nguyên logic.
+**Bài toán:** Có sẵn component (full logic + UI) từ nguồn khác (thư viện, project cũ, hoặc copy từ internet), muốn redesign lại UI cho match design system hiện tại mà giữ nguyên toàn bộ business logic.
 
 ### Skills cần dùng
 
@@ -28,197 +29,165 @@ Các usecase thực tế và workflow đề xuất khi sử dụng ClaudeKit ski
 ```
 → Scan nhanh codebase để hiểu tokens (colors, spacing, typography), component library đang dùng (shadcn, MUI, custom...), naming conventions.
 
+Prompt mẫu:
+```
+Hãy scan codebase và tổng hợp design system hiện tại: 
+- Component library đang dùng (shadcn, MUI, Ant Design, custom?)
+- Color tokens, spacing scale, typography scale
+- Naming conventions cho CSS classes/components
+- Layout patterns (grid system, breakpoints)
+- Có dark mode không? Dùng CSS variables hay Tailwind?
+```
+
 **Step 2 — Phân tích component gốc:**
 ```
 /ck:ai-multimodal --vision
 ```
-→ Cung cấp screenshot component gốc. AI sẽ extract: layout structure, color palette, spacing, typography, interactive states. Giúp hiểu component cần những gì về mặt visual.
+→ Cung cấp screenshot component gốc. AI sẽ extract: layout structure, color palette, spacing, typography, interactive states.
 
-**Step 3 — Redesign với design system:**
+Prompt mẫu:
+```
+Phân tích screenshot component này và extract:
+- Layout structure (flex/grid, columns, spacing)
+- Color palette sử dụng (primary, secondary, background, text)
+- Typography (font sizes, weights, line heights)
+- Interactive states (hover, active, disabled, focus)
+- Responsive behavior nếu nhìn thấy được
+- Các icon/image placeholders
+```
+
+**Step 3 — Cung cấp context cho AI trước khi redesign:**
+
+Đây là bước quan trọng nhất — cung cấp đầy đủ context để AI hiểu cả component gốc lẫn design system target.
+
+Prompt mẫu (copy và điền thông tin):
+```
+Tôi có component [TÊN COMPONENT] từ [NGUỒN] (đã paste code bên dưới).
+Component này có logic: [MÔ TẢ NGẮN LOGIC - VD: form validation, data fetching, drag-drop...].
+
+Design system hiện tại của project dùng:
+- UI Library: [shadcn/ui | MUI | Ant Design | custom]
+- CSS: [Tailwind | CSS Modules | styled-components]
+- Color tokens: [liệt kê hoặc reference file, VD: globals.css, theme.ts]
+- Component patterns: [VD: Card dùng rounded-lg shadow-sm, Button dùng variant props...]
+
+Yêu cầu:
+1. Giữ nguyên 100% business logic (hooks, state, handlers, API calls)
+2. Chỉ redesign phần UI/JSX cho match design system hiện tại
+3. Thay thế inline styles/custom CSS bằng [Tailwind classes | design tokens]
+4. Đảm bảo dark mode compatible
+5. Đảm bảo responsive (mobile-first)
+6. Giữ accessibility (aria labels, keyboard navigation)
+
+[PASTE CODE COMPONENT Ở ĐÂY]
+```
+
+**Step 4 — Thực hiện redesign:**
 ```
 /ck:ui-styling
 ```
-→ Map visual elements từ Step 2 sang design tokens hiện tại. Thay thế custom CSS bằng Tailwind utilities + shadcn/ui components. Đảm bảo dark mode, responsive, accessibility.
+→ Map visual elements sang design tokens hiện tại. Thay custom CSS bằng Tailwind utilities + shadcn/ui components.
 
-**Step 4 — Generate hoặc implement UI:**
+Prompt mẫu nếu dùng shadcn/ui:
+```
+Redesign component này dùng shadcn/ui components:
+- Thay <button> bằng <Button variant="..." size="...">
+- Thay custom input bằng <Input>, <Select>, <Textarea>
+- Thay custom modal bằng <Dialog>
+- Thay custom dropdown bằng <DropdownMenu>
+- Dùng cn() utility cho conditional classes
+- Follow shadcn/ui patterns: composition over configuration
+```
 
-*Option A — Nếu muốn AI generate:*
+**Step 5 — Generate UI mới (nếu cần tạo từ đầu):**
+
+*Option A — AI generate từ mô tả:*
 ```
 /ck:stitch
 ```
-→ Describe component cần tạo → AI generate UI → export Tailwind/HTML code.
+Prompt mẫu:
+```
+Generate UI component [TÊN] với specs:
+- Layout: [mô tả layout - VD: 2-column grid, left sidebar + main content]
+- Style: match design system (shadcn/ui + Tailwind)
+- States: [loading, empty, error, success]
+- Responsive: mobile stack, desktop side-by-side
+- Dark mode: support via CSS variables
+```
 
-*Option B — Nếu muốn replicate chính xác:*
+*Option B — Replicate từ screenshot:*
 ```
 /ck:frontend-design
 ```
-→ Cung cấp screenshot + design specs → tạo polished component match pixel-perfect.
+Prompt mẫu:
+```
+Replicate UI từ screenshot đính kèm, nhưng dùng design system hiện tại:
+- Dùng shadcn/ui components thay vì custom elements
+- Dùng Tailwind classes thay vì custom CSS
+- Match layout và spacing chính xác
+- Adapt colors sang color tokens của project
+```
 
-**Step 5 — Optimize & Review:**
+**Step 6 — Optimize:**
+```
+/ck:react-best-practices
+```
+Prompt mẫu:
+```
+Review component vừa redesign và optimize:
+- Có cần React.memo() không?
+- Có expensive computation nào cần useMemo()?
+- Event handlers có cần useCallback()?
+- Có thể lazy load phần nào không?
+- Bundle size impact?
+```
+
+**Step 7 — Clean up & Review:**
 ```
 /simplify
 /ck:code-review --pending
 ```
 → Clean up code → adversarial review để catch issues.
 
+### Prompt phụ trợ hữu ích
+
+**So sánh trước/sau redesign:**
+```
+/ck:chrome-devtools
+Screenshot component trước và sau redesign. So sánh:
+- Layout có đúng không?
+- Colors match design system?
+- Spacing consistent?
+- Responsive behavior?
+- Dark mode hoạt động?
+```
+
+**Verify logic không bị break:**
+```
+/ck:test ui
+Verify component sau redesign:
+- Tất cả interactive states hoạt động (click, hover, focus, disabled)
+- Form submission hoạt động đúng
+- API calls vẫn trigger đúng
+- Error handling vẫn hiển thị đúng
+- Loading states vẫn hoạt động
+```
+
+**Khi gặp component phức tạp (nhiều sub-components):**
+```
+Tôi cần redesign [COMPONENT] gồm các sub-components:
+1. [SubComponent1] - [mô tả]
+2. [SubComponent2] - [mô tả]
+3. [SubComponent3] - [mô tả]
+
+Hãy redesign từng sub-component một, bắt đầu từ leaf components (không có children) 
+rồi tiến lên parent components. Giữ nguyên props interface.
+```
+
 ### Tips
 
 - **Giữ logic tách biệt khỏi UI**: Tách business logic vào custom hooks, chỉ redesign phần render/JSX
 - **So sánh visual**: Dùng `/ck:chrome-devtools` để screenshot trước/sau, đảm bảo không mất functionality
 - **Test UI**: Dùng `/ck:test ui` để verify interactive states hoạt động đúng sau redesign
-
----
-
-## Use Case 2: Feature mới End-to-End
-
-**Bài toán:** Implement tính năng mới hoàn chỉnh từ A-Z.
-
-### Workflow
-```
-/ck:cook add-feature-name --auto
-```
-
-### Skills tự động kích hoạt
-1. `/ck:plan` — Lên kế hoạch implementation
-2. `/ck:research` — Nghiên cứu technical approach (nếu cần)
-3. Code implementation
-4. `/simplify` — Clean up code
-5. `/ck:test` — Chạy tests
-6. `/ck:code-review` — Review code
-
----
-
-## Use Case 3: Fix Bug Production
-
-**Bài toán:** Bug trên production cần fix nhanh và chính xác.
-
-### Workflow
-```
-/ck:fix api-returns-500-on-large-payload --auto
-```
-
-### Pipeline 6 bước tự động
-1. **Scout** — Scan codebase tìm related code
-2. **Diagnose** — Root cause analysis
-3. **Assess** — Đánh giá impact và approach
-4. **Implement** — Fix code
-5. **Verify** — Chạy tests, đảm bảo không regression
-6. **Finalize** — Clean up và summary
-
----
-
-## Use Case 4: Security Audit trước Release
-
-**Bài toán:** Kiểm tra bảo mật trước khi deploy production.
-
-### Workflow
-```
-/ck:security --stride --owasp --fix
-```
-
-### Kết quả
-- STRIDE threat model analysis
-- OWASP Top 10 vulnerability scan
-- Auto-fix cho các findings có thể fix tự động
-- Report với severity ratings
-
----
-
-## Use Case 5: Parallel Team Implementation
-
-**Bài toán:** Feature lớn cần nhiều agents làm song song.
-
-### Workflow
-```
-/ck:team cook "e-commerce checkout system" --devs 3
-```
-
-### Cơ chế
-- Mỗi agent làm việc trong git worktree riêng → không conflict
-- Task coordination qua Claude Tasks
-- Lead agent merge results cuối cùng
-
----
-
-## Use Case 6: Nghiên cứu Technical Decision
-
-**Bài toán:** Cần đánh giá technology choice hoặc architecture decision.
-
-### Workflow
-```
-/ck:research "compare PostgreSQL vs MongoDB for e-commerce" --max 5
-```
-
-### Kết quả
-- 4-phase research report (Scope → Gather → Analyze → Report)
-- Pros/cons comparison
-- Recommendation với evidence
-
----
-
-## Use Case 7: Tạo Documentation cho Project
-
-**Bài toán:** Project mới hoặc project thiếu docs.
-
-### Workflow
-```
-/ck:docs --init
-```
-
-### Tự động tạo
-- `project-overview-pdr.md`
-- `code-standards.md`
-- `codebase-summary.md`
-- `system-architecture.md`
-- `deployment-guide.md`
-
----
-
-## Use Case 8: Brand Identity & Design System
-
-**Bài toán:** Cần tạo brand identity hoàn chỉnh cho project mới.
-
-### Workflow
-```
-/ck:design --brand --auto
-```
-
-### Kết quả
-- Logo (55 styles)
-- Color palette & typography
-- Design tokens
-- Component library guidelines
-- CIP mockups (50 deliverables)
-
----
-
-## Use Case 9: Sprint Retrospective
-
-**Bài toán:** Review sprint vừa qua với data-driven insights.
-
-### Workflow
-```
-/ck:retro
-```
-
-### Metrics tự động thu thập
-- Commit frequency, LOC changes
-- Hotspot files (most changed)
-- Code churn analysis
-- Health indicators
-
----
-
-## Use Case 10: Deploy Multi-platform
-
-**Bài toán:** Deploy project lên hosting platform.
-
-### Workflow
-```
-/ck:deploy --auto
-```
-
-### Hỗ trợ 15+ platforms
-Vercel, Netlify, Cloudflare, Railway, Render, Heroku, GitHub Pages, GCP, AWS, Digital Ocean, Fly.io...
-
-Auto-detect project type → recommend platform → configure → deploy.
+- **Chia nhỏ nếu component lớn**: Redesign từng sub-component riêng, test từng phần trước khi ghép lại
+- **Giữ props interface**: Không thay đổi props interface để tránh break nơi component được import

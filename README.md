@@ -22,7 +22,7 @@ Repo này dùng để **học cách sử dụng ClaudeKit Engineer** và tổng 
 | File | Nội dung |
 |------|----------|
 | [summary.md](./summary.md) | Tổng hợp toàn bộ 76+ skills, phân loại theo nhóm |
-| [frontend-usecase.md](./frontend-usecase.md) | 10 use cases thực tế chi tiết với workflow step-by-step |
+| [docs/frontend-usecase.md](./docs/frontend-usecase.md) | Use cases thực tế cho frontend development |
 | [docs/](./docs/) | Documentation kỹ thuật (architecture, code standards, roadmap) |
 | [plans/](./plans/) | Implementation plans và reports |
 
